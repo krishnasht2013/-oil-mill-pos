@@ -12,7 +12,7 @@ class InventoryManager:
             "INSERT INTO products (name, unit, default_price) VALUES (%s, %s, %s) RETURNING id",
             (name, unit, default_price)
         )
-        product_id = result[0][0] if result and len(result) > 0 else None
+        product_id = result[0]['id'] if result and len(result) > 0 else None
         if product_id:
             self.db.execute_query(
                 "INSERT INTO inventory (product_id, quantity) VALUES (%s, 0)",
@@ -74,7 +74,7 @@ class CustomerManager:
             "INSERT INTO customers (name, phone) VALUES (%s, %s) RETURNING id",
             (name, phone)
         )
-        return result[0][0] if result and len(result) > 0 else None
+        return result[0]['id'] if result and len(result) > 0 else None
 
     def update_balance(self, customer_id, amount):
         """Adds to customer balance (credit). Positive amount = owes more, negative = paid."""
@@ -103,7 +103,7 @@ class SalesManager:
             "INSERT INTO sales (customer_id, total_amount, payment_status) VALUES (%s, %s, %s) RETURNING id",
             (customer_id, total_amount, payment_status)
         )
-        sale_id = result[0][0] if result and len(result) > 0 else None
+        sale_id = result[0]['id'] if result and len(result) > 0 else None
 
         # 2. Create Sale Items & Update Inventory
         for product_id, quantity, unit_price in items:
