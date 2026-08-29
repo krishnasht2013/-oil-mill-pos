@@ -12,7 +12,14 @@ class InventoryManager:
             "INSERT INTO products (name, unit, default_price) VALUES (%s, %s, %s) RETURNING id",
             (name, unit, default_price)
         )
-        product_id = result[0]['id'] if result and len(result) > 0 else None
+
+        if not result or len(result) == 0:
+            return None
+
+        # Fail-safe: handle both dictionary {'id': 1} and tuple (1,)
+        first_row = result[0]
+        product_id = first_row.get('id') if isinstance(first_row, dict) else first_row[0]
+
         if product_id:
             self.db.execute_query(
                 "INSERT INTO inventory (product_id, quantity) VALUES (%s, 0)",
@@ -74,7 +81,14 @@ class CustomerManager:
             "INSERT INTO customers (name, phone) VALUES (%s, %s) RETURNING id",
             (name, phone)
         )
-        return result[0]['id'] if result and len(result) > 0 else None
+        if not result or len(result) == 0:
+            return None
+
+        # Fail-safe: handle both dictionary {'id': 1} and tuple (1,)
+        first_row = result[0]
+        if isinstance(first_row, dict):
+            return first_row.get('id')
+        return first_row[0]
 
     def update_balance(self, customer_id, amount):
         """Adds to customer balance (credit). Positive amount = owes more, negative = paid."""
@@ -103,7 +117,13 @@ class SalesManager:
             "INSERT INTO sales (customer_id, total_amount, payment_status) VALUES (%s, %s, %s) RETURNING id",
             (customer_id, total_amount, payment_status)
         )
-        sale_id = result[0]['id'] if result and len(result) > 0 else None
+
+        if not result or len(result) == 0:
+            return None
+
+        # Fail-safe: handle both dictionary {'id': 1} and tuple (1,)
+        first_row = result[0]
+        sale_id = first_row.get('id') if isinstance(first_row, dict) else first_row[0]
 
         # 2. Create Sale Items & Update Inventory
         for product_id, quantity, unit_price in items:
