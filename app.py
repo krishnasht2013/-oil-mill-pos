@@ -74,8 +74,11 @@ def customers():
     if request.method == 'POST':
         name = request.form['name']
         phone = request.form['phone']
-        cust.add_customer(name, phone)
-        flash("Customer added!")
+        customer_id = cust.add_customer(name, phone)
+        if customer_id:
+            flash("Customer added successfully!")
+        else:
+            flash("Error: Could not add customer. Please check the logs.")
         return redirect(url_for('customers'))
 
     customer_list = db.fetch_all("SELECT * FROM customers")
