@@ -5,19 +5,25 @@ import os
 class DatabaseManager:
     def __init__(self):
         self.db_url = os.environ.get('DATABASE_URL')
-        if not self.db_url:
-            # For local testing if no env var is set, you can put a local postgres url here
-            # But for deployment, Render/Supabase will provide this.
+        if self.db_url:
+            # Normalize the URL: psycopg2 requires 'postgresql://' instead of 'postgres://'
+            if self.db_url.startswith('postgres://'):
+                self.db_url = self.db_url.replace('postgres://', 'postgresql://', 1)
+        else:
             print("Warning: DATABASE_URL environment variable not set.")
 
         self.initialize_db()
 
     def get_connection(self):
         """Returns a psycopg2 connection object."""
-        # PostgreSQL connections are usually handled differently than SQLite.
-        # We return a new connection each time to avoid session issues in cloud environments.
-        conn = psycopg2.connect(self.db_url, cursor_factory=RealDictCursor)
-        return conn
+        if not self.db_url:
+            raise ConnectionError("DATABASE_URL is not configured. Cannot connect to database.")
+        try:
+            conn = psycopg2.connect(self.db_url, cursor_factory=RealDictCursor)
+            return conn
+        except Exception as e:
+            print(f"Critical Error: Could not connect to PostgreSQL database. Details: {e}")
+            raise e
 
     def initialize_db(self):
         """Creates all necessary tables if they do not exist."""
@@ -102,30 +108,22 @@ class DatabaseManager:
             print(f"Database initialization error: {e}")
 
     def execute_query(self, query, params=()):
-        """Executes a query and returns the cursor."""
+        """Executes a query and returns the result."""
         try:
             conn = self.get_connection()
             cursor = conn.cursor()
             cursor.execute(query, params)
             conn.commit()
-            # In Postgres, we can't return the cursor after closing the connection.
-            # For simple inserts/updates, we return the lastrowid as a custom attribute.
-            result = None
-            if cursor.description: # If query returned data
-                result = cursor.fetchall()
 
-            # Handle returning the last inserted ID
-            last_id = None
-            if "INSERT" in query.upper():
-                # PostgreSQL doesn't use lastrowid like SQLite.
-                # We use 'RETURNING id' in the query or fetch it here.
-                pass
+            result = None
+            if cursor.description: # If query returned data (e.g., RETURNING id)
+                result = cursor.fetchall()
 
             cursor.close()
             conn.close()
             return result
         except Exception as e:
-            print(f"Query error: {e}")
+            print(f"Query execution error: {e}\nQuery: {query}\nParams: {params}")
             return None
 
     def fetch_all(self, query, params=()):
