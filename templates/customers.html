@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card p-4 mb-4">
+            <h4 class="mb-3">Add New Customer</h4>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" name="phone" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Add Customer</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card p-4">
+            <h4 class="mb-3">Customer Credit List (Udhaar)</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr class="table-warning">
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Balance (Owed)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in customers %}
+                    <tr>
+                        <td>{{ c.id }}</td>
+                        <td>{{ c.name }}</td>
+                        <td>{{ c.phone }}</td>
+                        <td class="fw-bold text-danger">₹{{ c.current_balance }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

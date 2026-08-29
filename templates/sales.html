@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h3 class="text-center mb-4">New Sale (Billing)</h3>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Select Customer</label>
+                    <select name="customer_id" class="form-select" required>
+                        <option value="">-- Choose Customer --</option>
+                        {% for c in customers %}
+                        <option value="{{ c.id }}">{{ c.name }} (ID: {{ c.id }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Quantity of Oil (Litre)</label>
+                    <input type="number" step="0.01" name="quantity" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Price per Litre (₹)</label>
+                    <input type="number" step="0.01" name="price" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Payment Status</label>
+                    <select name="status" class="form-select">
+                        <option value="Paid">Paid (Cash/UPI)</option>
+                        <option value="Credit">Credit (Udhaar)</option>
+                        <option value="Partial">Partial Payment</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 p-2">Complete Sale</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
